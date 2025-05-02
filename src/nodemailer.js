@@ -5,8 +5,8 @@ const transporter = nodemailer.createTransport({
   port: 587,
   secure: false, 
   auth: {
-    user: process.env.MAILJET_APIKEY,
-    pass: process.env.MAILJET_SECRETKEY,
+    user: process.env.USERNAME,
+    pass: process.env.PASSWORD,
   },
 });
 
