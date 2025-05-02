@@ -1,0 +1,273 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Department {
+  deptId               Int                   @id @default(autoincrement())
+  deptName             String                @unique
+  deptAbbreviation     String?
+  deptIsActive         Boolean               @default(true)
+  deptRemark           String?
+  employeeRegistration EmployeeRegistration?
+  deptCreatedBy        Int
+  createdAt            DateTime              @default(now())
+  deptUpdatedBy        Int?
+  updatedAt            DateTime?             @updatedAt
+  division             Division[]
+  criteriaCategory     CriteriaCategory[]
+  employeeEvaluation   EmployeeEvaluation[]
+}
+
+model Division {
+  divisionId           Int                   @id @default(autoincrement())
+  deptId               Int
+  department           Department            @relation(fields: [deptId], references: [deptId])
+  divisionName         String
+  divisionAbbreviation String?
+  divisionIsActive     Boolean               @default(true)
+  divisionRemark       String?
+  employeeRegistration EmployeeRegistration?
+  divisionCreatedBy    Int
+  createdAt            DateTime              @default(now())
+  divisionUpdatedBy    Int?
+  updatedAt            DateTime?             @updatedAt
+  position             Position[]
+  criteriaCategory     CriteriaCategory[]
+  employeeEvaluation   EmployeeEvaluation[]
+}
+
+model Position {
+  positionId                     Int                   @id @default(autoincrement())
+  divisionId                     Int
+  division                       Division              @relation(fields: [divisionId], references: [divisionId])
+  positionName                   String                @unique
+  positionIsActive               Boolean               @default(true)
+  positionRemark                 String?
+  employeeRegistration           EmployeeRegistration?
+  positionCreatedBy              Int
+  createdAt                      DateTime              @default(now())
+  positionUpdatedBy              Int?
+  updatedAt                      DateTime?             @updatedAt
+  criteriaCategory               CriteriaCategory[]
+  employeeEvaluationsAsPosition  EmployeeEvaluation[]  @relation("Position_Evaluations")
+  employeeEvaluationsAsEvaluator EmployeeEvaluation[]  @relation("Evaluator_Position_Evaluations")
+}
+
+model UserAccount {
+  usrAccId             Int                   @id @default(autoincrement())
+  empId                Int?                  @unique
+  employeeRegistration EmployeeRegistration? @relation(fields: [empId], references: [empId])
+  usrAccEmail          String                @unique
+  usrAccPassword       String?
+  usrAccPrivilege      UserPrivilege
+  usrAccIsActive       Boolean               @default(true)
+  usrAccCreatedBy      Int?
+  createdAt            DateTime              @default(now())
+  usrAccUpdatedBy      Int?
+  updatedAt            DateTime?             @updatedAt
+}
+
+model EmployeeRegistration {
+  empId            Int          @id @default(autoincrement())
+  empUniqueId      Int
+  userAccount      UserAccount?
+  empFName         String
+  empMName         String
+  empLname         String
+  empGender        Gender
+  empMobileNo      Int
+  empEmail         String       @unique
+  empLocation      String
+  empRegion        Region?
+  empDistrict      District?
+  empCity          City?        @relation(fields: [cityId], references: [cityId])
+  cityId           Int?
+  empGrade         Int
+  empLevel         Int
+  positionId       Int          @unique
+  position         Position     @relation(fields: [positionId], references: [positionId])
+  deptId           Int          @unique
+  department       Department   @relation(fields: [deptId], references: [deptId])
+  divisionId       Int          @unique
+  division         Division     @relation(fields: [divisionId], references: [divisionId])
+  empIsActive      Boolean      @default(true)
+  dateOfEmployment DateTime
+  empCreatedBy     Int
+  createdAt        DateTime     @default(now())
+  empUpdatedBy     Int?
+  updatedAt        DateTime?    @updatedAt
+}
+
+model CriteriaCategory {
+  criCategoryId    Int               @id @default(autoincrement())
+  criYear          DateTime
+  deptId           Int
+  department       Department        @relation(fields: [deptId], references: [deptId])
+  divisionId       Int?
+  division         Division?         @relation(fields: [divisionId], references: [divisionId])
+  positionId       Int?
+  position         Position?         @relation(fields: [positionId], references: [positionId])
+  criRegion        Region?
+  criDistrict      District?
+  criAbleToEdit    AbleToEdit
+  criCreatedBy     Int
+  createdAt        DateTime          @default(now())
+  criteria         Criteria[]
+  criteriaResponse CriteriaResponse?
+  City             City?             @relation(fields: [cityCityId], references: [cityId])
+  cityCityId       Int?
+}
+
+model Criteria {
+  criId            Int              @id @default(autoincrement())
+  criCategoryId    Int
+  criteriaCategory CriteriaCategory @relation(fields: [criCategoryId], references: [criCategoryId])
+  criQuestion      String
+  criWeight        Decimal
+  criIsActive      Boolean          @default(true)
+  criUpdatedBy     Int?
+  updatedAt        DateTime?        @updatedAt
+}
+
+model Questionary {
+  questionaryId       Int                  @id @default(autoincrement())
+  question            String
+  queIsActive         Boolean              @default(true)
+  queCreatedBy        Int
+  createdAt           DateTime             @default(now())
+  queUpdatedBy        Int?
+  updatedAt           DateTime?            @updatedAt
+  questionaryResponse QuestionaryResponse?
+}
+
+model EmployeeEvaluation {
+  evaluationId         Int        @id @default(autoincrement())
+  deptId               Int
+  department           Department @relation(fields: [deptId], references: [deptId])
+  divisionId           Int
+  division             Division   @relation(fields: [divisionId], references: [divisionId])
+  positionId           Int
+  empPosition          Position   @relation("Position_Evaluations", fields: [positionId], references: [positionId])
+  evaluatorId          Int
+  evaluatorPositionId  Int
+  evaluatorPosition    Position   @relation("Evaluator_Position_Evaluations", fields: [evaluatorPositionId], references: [positionId])
+  evaluationPeriodFrom DateTime
+  evaluationPeriodTo   DateTime
+  totalScore           Decimal
+  totalPercentage      Decimal
+  ratingLevel          Decimal
+  empComment           String?
+  employeeApproval     Approval?
+  empApprovedAt        DateTime?
+  supervisorApproval   Approval?
+  supervisorApprovedAt DateTime?
+  nextHigherApproval   Approval?
+  nextHigherApprovedAt DateTime?
+  hrComment            String?
+  hrApproval           Approval?
+  hrApprovedAt         DateTime?
+}
+
+model CriteriaResponse {
+  CriResponseId     Int              @id @default(autoincrement())
+  criCategoryId     Int              @unique
+  evaluationId      Int
+  criteriaCategory  CriteriaCategory @relation(fields: [criCategoryId], references: [criCategoryId])
+  criEvaluationRate Decimal
+  criWeightScore    Decimal
+}
+
+model QuestionaryResponse {
+  queResponseId       Int         @id @default(autoincrement())
+  evaluationId        Int
+  questionaryId       Int         @unique
+  questionary         Questionary @relation(fields: [questionaryId], references: [questionaryId])
+  questionaryResponse String
+}
+
+model RatingLevel {
+  rlId               Int                  @id @default(autoincrement())
+  rlYear             DateTime
+  rlRemarks          String?
+  rlCreatedBy        Int
+  createdAt          DateTime             @default(now())
+  rlAbleToEdit       AbleToEdit
+  ratingLevelHistory RatingLevelHistory[]
+}
+
+model RatingLevelHistory {
+  rlHistoryId  Int         @id @default(autoincrement())
+  rlId         Int
+  ratingLevel  RatingLevel @relation(fields: [rlId], references: [rlId])
+  rlName       String
+  rlPResultMin Decimal
+  rlPResultMax Decimal
+  rlWScoreMin  Decimal
+  rlWScoreMax  Decimal
+  rlRemarks    String
+  rlUpdatedBy  Int?
+  updatedAt    DateTime?   @updatedAt
+}
+
+model City {
+  cityId               Int                    @id @default(autoincrement())
+  cityName             String                 @unique
+  cityRegion           Region?
+  cityDistrict         District?
+  cityIsActive         Boolean                @default(true)
+  cityCreatedBy        Int
+  createdAt            DateTime               @default(now())
+  cityUpdatedBy        Int?
+  updatedAt            DateTime?              @updatedAt
+  employeeRegistration EmployeeRegistration[]
+  criteriaCategory     CriteriaCategory[]
+}
+
+enum UserPrivilege {
+  SuperAdmin
+  SystemAdmin
+  Admin
+  User
+}
+
+enum AbleToEdit {
+  FormSent
+  FormCreated
+}
+
+enum Approval {
+  Agree
+  Disagree
+}
+
+enum Gender {
+  Male
+  Female
+}
+
+enum Region {
+  All
+  Central_AA
+  Eastern_AA
+  Western_AA
+  Southern_AA
+  Northern_AA
+}
+
+enum District {
+  Western_District
+  Eastern_District
+  Southern_District
+  Northern_District
+}
