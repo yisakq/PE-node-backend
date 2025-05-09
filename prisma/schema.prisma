@@ -26,7 +26,6 @@ model Department {
   updatedAt            DateTime?             @updatedAt
   division             Division[]
   criteriaCategory     CriteriaCategory[]
-  employeeEvaluation   EmployeeEvaluation[]
 }
 
 model Division {
@@ -44,24 +43,21 @@ model Division {
   updatedAt            DateTime?             @updatedAt
   position             Position[]
   criteriaCategory     CriteriaCategory[]
-  employeeEvaluation   EmployeeEvaluation[]
 }
 
 model Position {
-  positionId                     Int                   @id @default(autoincrement())
-  divisionId                     Int
-  division                       Division              @relation(fields: [divisionId], references: [divisionId])
-  positionName                   String                @unique
-  positionIsActive               Boolean               @default(true)
-  positionRemark                 String?
-  employeeRegistration           EmployeeRegistration?
-  positionCreatedBy              Int
-  createdAt                      DateTime              @default(now())
-  positionUpdatedBy              Int?
-  updatedAt                      DateTime?             @updatedAt
-  criteriaCategory               CriteriaCategory[]
-  employeeEvaluationsAsPosition  EmployeeEvaluation[]  @relation("Position_Evaluations")
-  employeeEvaluationsAsEvaluator EmployeeEvaluation[]  @relation("Evaluator_Position_Evaluations")
+  positionId           Int                   @id @default(autoincrement())
+  divisionId           Int
+  division             Division              @relation(fields: [divisionId], references: [divisionId])
+  positionName         String                @unique
+  positionIsActive     Boolean               @default(true)
+  positionRemark       String?
+  employeeRegistration EmployeeRegistration?
+  positionCreatedBy    Int
+  createdAt            DateTime              @default(now())
+  positionUpdatedBy    Int?
+  updatedAt            DateTime?             @updatedAt
+  criteriaCategory     CriteriaCategory[]
 }
 
 model UserAccount {
@@ -79,7 +75,7 @@ model UserAccount {
 }
 
 model EmployeeRegistration {
-  empId            Int          @id @default(autoincrement())
+  empId            Int                  @id @default(autoincrement())
   empUniqueId      Int
   userAccount      UserAccount?
   empFName         String
@@ -87,26 +83,28 @@ model EmployeeRegistration {
   empLname         String
   empGender        Gender
   empMobileNo      Int
-  empEmail         String       @unique
+  empEmail         String               @unique
   empLocation      String
   empRegion        Region?
   empDistrict      District?
-  empCity          City?        @relation(fields: [cityId], references: [cityId])
+  empCity          City?                @relation(fields: [cityId], references: [cityId])
   cityId           Int?
   empGrade         Int
   empLevel         Int
-  positionId       Int          @unique
-  position         Position     @relation(fields: [positionId], references: [positionId])
-  deptId           Int          @unique
-  department       Department   @relation(fields: [deptId], references: [deptId])
-  divisionId       Int          @unique
-  division         Division     @relation(fields: [divisionId], references: [divisionId])
-  empIsActive      Boolean      @default(true)
+  positionId       Int                  @unique
+  position         Position             @relation(fields: [positionId], references: [positionId])
+  deptId           Int                  @unique
+  department       Department           @relation(fields: [deptId], references: [deptId])
+  divisionId       Int                  @unique
+  division         Division             @relation(fields: [divisionId], references: [divisionId])
+  empIsActive      Boolean              @default(true)
   dateOfEmployment DateTime
   empCreatedBy     Int
-  createdAt        DateTime     @default(now())
+  createdAt        DateTime             @default(now())
   empUpdatedBy     Int?
-  updatedAt        DateTime?    @updatedAt
+  updatedAt        DateTime?            @updatedAt
+  evaluator        EmployeeEvaluation[] @relation("Evaluator")
+  evaluatee        EmployeeEvaluation[] @relation("Evaluatee")
 }
 
 model CriteriaCategory {
@@ -152,31 +150,28 @@ model Questionary {
 }
 
 model EmployeeEvaluation {
-  evaluationId         Int        @id @default(autoincrement())
-  deptId               Int
-  department           Department @relation(fields: [deptId], references: [deptId])
-  divisionId           Int
-  division             Division   @relation(fields: [divisionId], references: [divisionId])
-  positionId           Int
-  empPosition          Position   @relation("Position_Evaluations", fields: [positionId], references: [positionId])
-  evaluatorId          Int
-  evaluatorPositionId  Int
-  evaluatorPosition    Position   @relation("Evaluator_Position_Evaluations", fields: [evaluatorPositionId], references: [positionId])
-  evaluationPeriodFrom DateTime
-  evaluationPeriodTo   DateTime
-  totalScore           Decimal
-  totalPercentage      Decimal
-  ratingLevel          Decimal
-  empComment           String?
-  employeeApproval     Approval?
-  empApprovedAt        DateTime?
-  supervisorApproval   Approval?
-  supervisorApprovedAt DateTime?
-  nextHigherApproval   Approval?
-  nextHigherApprovedAt DateTime?
-  hrComment            String?
-  hrApproval           Approval?
-  hrApprovedAt         DateTime?
+  evaluationId            Int                  @id @default(autoincrement())
+  evaluatorId             Int
+  evaluateeId             Int
+  evaluator               EmployeeRegistration @relation("Evaluator", fields: [evaluatorId], references: [empId])
+  evaluatee               EmployeeRegistration @relation("Evaluatee", fields: [evaluateeId], references: [empId])
+  evaluationPeriodFrom    DateTime
+  evaluationPeriodTo      DateTime
+  totalScore              Decimal
+  totalPercentage         Decimal
+  rateLevel               String
+  rateRemark              String
+  empComment              String?
+  hrComment               String?
+  hrApprovedAt            DateTime?
+  hrApprovedBy             Int?
+  finalizedByEvaluator    Boolean              @default(false)
+  evaluateeAccepted       Boolean?
+  sentWithoutFinalization Boolean?
+  createdAt               DateTime             @default(now())
+  updatedAt               DateTime?            @updatedAt
+ 
+ 
 }
 
 model CriteriaResponse {
@@ -244,11 +239,6 @@ enum UserPrivilege {
 enum AbleToEdit {
   FormSent
   FormCreated
-}
-
-enum Approval {
-  Agree
-  Disagree
 }
 
 enum Gender {

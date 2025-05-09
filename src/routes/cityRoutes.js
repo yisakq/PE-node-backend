@@ -11,3 +11,4 @@ cityRoutes.put('/edit', authMiddleware, roleMiddleware(['Admin', 'SuperAdmin']),
 
 
 module.exports = cityRoutes;
+    

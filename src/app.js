@@ -4,6 +4,7 @@ const cors = require("cors");
 const app = express();
 const prisma = require("./prismaclient");
 const rootRouter = require("./routes"); 
+require('./cron');
 
 app.use(cors());
 app.use(express.json());

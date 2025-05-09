@@ -1,19 +1,32 @@
 -- CreateEnum
-CREATE TYPE "UserPrivilege" AS ENUM ('SUPERADMIN', 'ADMIN', 'USER');
+CREATE TYPE "UserPrivilege" AS ENUM ('SuperAdmin', 'SystemAdmin', 'Admin', 'User');
 
 -- CreateEnum
-CREATE TYPE "AbleToEdit" AS ENUM ('FormSent', 'FormProcessed');
+CREATE TYPE "AbleToEdit" AS ENUM ('FormSent', 'FormCreated');
+
+-- CreateEnum
+CREATE TYPE "Approval" AS ENUM ('Agree', 'Disagree');
+
+-- CreateEnum
+CREATE TYPE "Gender" AS ENUM ('Male', 'Female');
+
+-- CreateEnum
+CREATE TYPE "Region" AS ENUM ('All', 'Central_AA', 'Eastern_AA', 'Western_AA', 'Southern_AA', 'Northern_AA');
+
+-- CreateEnum
+CREATE TYPE "District" AS ENUM ('Western_District', 'Eastern_District', 'Southern_District', 'Northern_District');
 
 -- CreateTable
 CREATE TABLE "Department" (
     "deptId" SERIAL NOT NULL,
     "deptName" TEXT NOT NULL,
-    "deptIsActive" BOOLEAN NOT NULL,
+    "deptAbbreviation" TEXT,
+    "deptIsActive" BOOLEAN NOT NULL DEFAULT true,
     "deptRemark" TEXT,
     "deptCreatedBy" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "deptUpdatedBy" INTEGER NOT NULL,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deptUpdatedBy" INTEGER,
+    "updatedAt" TIMESTAMP(3),
 
     CONSTRAINT "Department_pkey" PRIMARY KEY ("deptId")
 );
@@ -23,12 +36,13 @@ CREATE TABLE "Division" (
     "divisionId" SERIAL NOT NULL,
     "deptId" INTEGER NOT NULL,
     "divisionName" TEXT NOT NULL,
-    "divisionIsActive" BOOLEAN NOT NULL,
+    "divisionAbbreviation" TEXT,
+    "divisionIsActive" BOOLEAN NOT NULL DEFAULT true,
     "divisionRemark" TEXT,
     "divisionCreatedBy" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "divisionUpdatedBy" INTEGER NOT NULL,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "divisionUpdatedBy" INTEGER,
+    "updatedAt" TIMESTAMP(3),
 
     CONSTRAINT "Division_pkey" PRIMARY KEY ("divisionId")
 );
@@ -38,12 +52,12 @@ CREATE TABLE "Position" (
     "positionId" SERIAL NOT NULL,
     "divisionId" INTEGER NOT NULL,
     "positionName" TEXT NOT NULL,
-    "positionIsActive" BOOLEAN NOT NULL,
+    "positionIsActive" BOOLEAN NOT NULL DEFAULT true,
     "positionRemark" TEXT,
     "positionCreatedBy" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "positionUpdatedBy" INTEGER NOT NULL,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "positionUpdatedBy" INTEGER,
+    "updatedAt" TIMESTAMP(3),
 
     CONSTRAINT "Position_pkey" PRIMARY KEY ("positionId")
 );
@@ -51,15 +65,15 @@ CREATE TABLE "Position" (
 -- CreateTable
 CREATE TABLE "UserAccount" (
     "usrAccId" SERIAL NOT NULL,
-    "empId" INTEGER NOT NULL,
+    "empId" INTEGER,
     "usrAccEmail" TEXT NOT NULL,
-    "usrAccPassword" TEXT NOT NULL,
+    "usrAccPassword" TEXT,
     "usrAccPrivilege" "UserPrivilege" NOT NULL,
-    "usrAccIsActive" BOOLEAN NOT NULL,
-    "usrAccCreatedBy" INTEGER NOT NULL,
+    "usrAccIsActive" BOOLEAN NOT NULL DEFAULT true,
+    "usrAccCreatedBy" INTEGER,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "usrAccUpdatedBy" INTEGER NOT NULL,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "usrAccUpdatedBy" INTEGER,
+    "updatedAt" TIMESTAMP(3),
 
     CONSTRAINT "UserAccount_pkey" PRIMARY KEY ("usrAccId")
 );
@@ -71,21 +85,24 @@ CREATE TABLE "EmployeeRegistration" (
     "empFName" TEXT NOT NULL,
     "empMName" TEXT NOT NULL,
     "empLname" TEXT NOT NULL,
-    "empGender" TEXT NOT NULL,
+    "empGender" "Gender" NOT NULL,
     "empMobileNo" INTEGER NOT NULL,
     "empEmail" TEXT NOT NULL,
     "empLocation" TEXT NOT NULL,
+    "empRegion" "Region",
+    "empDistrict" "District",
+    "cityId" INTEGER,
     "empGrade" INTEGER NOT NULL,
     "empLevel" INTEGER NOT NULL,
     "positionId" INTEGER NOT NULL,
     "deptId" INTEGER NOT NULL,
     "divisionId" INTEGER NOT NULL,
-    "empIsActive" BOOLEAN NOT NULL,
+    "empIsActive" BOOLEAN NOT NULL DEFAULT true,
     "dateOfEmployment" TIMESTAMP(3) NOT NULL,
     "empCreatedBy" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "empUpdatedBy" INTEGER NOT NULL,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "empUpdatedBy" INTEGER,
+    "updatedAt" TIMESTAMP(3),
 
     CONSTRAINT "EmployeeRegistration_pkey" PRIMARY KEY ("empId")
 );
@@ -97,9 +114,12 @@ CREATE TABLE "CriteriaCategory" (
     "deptId" INTEGER NOT NULL,
     "divisionId" INTEGER,
     "positionId" INTEGER,
+    "criRegion" "Region",
+    "criDistrict" "District",
     "criAbleToEdit" "AbleToEdit" NOT NULL,
     "criCreatedBy" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "cityCityId" INTEGER,
 
     CONSTRAINT "CriteriaCategory_pkey" PRIMARY KEY ("criCategoryId")
 );
@@ -110,9 +130,9 @@ CREATE TABLE "Criteria" (
     "criCategoryId" INTEGER NOT NULL,
     "criQuestion" TEXT NOT NULL,
     "criWeight" DECIMAL(65,30) NOT NULL,
-    "criIsActive" BOOLEAN NOT NULL,
-    "criUpdatedBy" INTEGER NOT NULL,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "criIsActive" BOOLEAN NOT NULL DEFAULT true,
+    "criUpdatedBy" INTEGER,
+    "updatedAt" TIMESTAMP(3),
 
     CONSTRAINT "Criteria_pkey" PRIMARY KEY ("criId")
 );
@@ -121,13 +141,39 @@ CREATE TABLE "Criteria" (
 CREATE TABLE "Questionary" (
     "questionaryId" SERIAL NOT NULL,
     "question" TEXT NOT NULL,
-    "queIsActive" BOOLEAN NOT NULL,
+    "queIsActive" BOOLEAN NOT NULL DEFAULT true,
     "queCreatedBy" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "queUpdatedBy" INTEGER NOT NULL,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "queUpdatedBy" INTEGER,
+    "updatedAt" TIMESTAMP(3),
 
     CONSTRAINT "Questionary_pkey" PRIMARY KEY ("questionaryId")
+);
+
+-- CreateTable
+CREATE TABLE "EmployeeEvaluation" (
+    "evaluationId" SERIAL NOT NULL,
+    "evaluatorId" INTEGER NOT NULL,
+    "evaluateeId" INTEGER NOT NULL,
+    "evaluationPeriodFrom" TIMESTAMP(3) NOT NULL,
+    "evaluationPeriodTo" TIMESTAMP(3) NOT NULL,
+    "totalScore" DECIMAL(65,30) NOT NULL,
+    "totalPercentage" DECIMAL(65,30) NOT NULL,
+    "rateLevel" TEXT NOT NULL,
+    "rateRemark" TEXT NOT NULL,
+    "empComment" TEXT,
+    "hrComment" TEXT,
+    "hrApproval" "Approval",
+    "hrApprovedAt" TIMESTAMP(3),
+    "finalizedByEvaluator" BOOLEAN NOT NULL DEFAULT false,
+    "evaluateeAccepted" BOOLEAN,
+    "sentWithoutFinalization" BOOLEAN,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3),
+    "hrUpdatedBy" INTEGER,
+    "hrUpatedAt" TIMESTAMP(3),
+
+    CONSTRAINT "EmployeeEvaluation_pkey" PRIMARY KEY ("evaluationId")
 );
 
 -- CreateTable
@@ -168,20 +214,34 @@ CREATE TABLE "RatingLevelHistory" (
     "rlHistoryId" SERIAL NOT NULL,
     "rlId" INTEGER NOT NULL,
     "rlName" TEXT NOT NULL,
-    "rlPResult" TEXT NOT NULL,
-    "rlWScore" TEXT NOT NULL,
+    "rlPResultMin" DECIMAL(65,30) NOT NULL,
+    "rlPResultMax" DECIMAL(65,30) NOT NULL,
+    "rlWScoreMin" DECIMAL(65,30) NOT NULL,
+    "rlWScoreMax" DECIMAL(65,30) NOT NULL,
     "rlRemarks" TEXT NOT NULL,
-    "rlUpdatedBy" INTEGER NOT NULL,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "rlUpdatedBy" INTEGER,
+    "updatedAt" TIMESTAMP(3),
 
     CONSTRAINT "RatingLevelHistory_pkey" PRIMARY KEY ("rlHistoryId")
 );
 
--- CreateIndex
-CREATE UNIQUE INDEX "Department_deptName_key" ON "Department"("deptName");
+-- CreateTable
+CREATE TABLE "City" (
+    "cityId" SERIAL NOT NULL,
+    "cityName" TEXT NOT NULL,
+    "cityRegion" "Region",
+    "cityDistrict" "District",
+    "cityIsActive" BOOLEAN NOT NULL DEFAULT true,
+    "cityCreatedBy" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "cityUpdatedBy" INTEGER,
+    "updatedAt" TIMESTAMP(3),
+
+    CONSTRAINT "City_pkey" PRIMARY KEY ("cityId")
+);
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Division_divisionName_key" ON "Division"("divisionName");
+CREATE UNIQUE INDEX "Department_deptName_key" ON "Department"("deptName");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Position_positionName_key" ON "Position"("positionName");
@@ -210,6 +270,9 @@ CREATE UNIQUE INDEX "CriteriaResponse_criCategoryId_key" ON "CriteriaResponse"("
 -- CreateIndex
 CREATE UNIQUE INDEX "QuestionaryResponse_questionaryId_key" ON "QuestionaryResponse"("questionaryId");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "City_cityName_key" ON "City"("cityName");
+
 -- AddForeignKey
 ALTER TABLE "Division" ADD CONSTRAINT "Division_deptId_fkey" FOREIGN KEY ("deptId") REFERENCES "Department"("deptId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
@@ -217,7 +280,10 @@ ALTER TABLE "Division" ADD CONSTRAINT "Division_deptId_fkey" FOREIGN KEY ("deptI
 ALTER TABLE "Position" ADD CONSTRAINT "Position_divisionId_fkey" FOREIGN KEY ("divisionId") REFERENCES "Division"("divisionId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UserAccount" ADD CONSTRAINT "UserAccount_empId_fkey" FOREIGN KEY ("empId") REFERENCES "EmployeeRegistration"("empId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "UserAccount" ADD CONSTRAINT "UserAccount_empId_fkey" FOREIGN KEY ("empId") REFERENCES "EmployeeRegistration"("empId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "EmployeeRegistration" ADD CONSTRAINT "EmployeeRegistration_cityId_fkey" FOREIGN KEY ("cityId") REFERENCES "City"("cityId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "EmployeeRegistration" ADD CONSTRAINT "EmployeeRegistration_positionId_fkey" FOREIGN KEY ("positionId") REFERENCES "Position"("positionId") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -238,7 +304,16 @@ ALTER TABLE "CriteriaCategory" ADD CONSTRAINT "CriteriaCategory_divisionId_fkey"
 ALTER TABLE "CriteriaCategory" ADD CONSTRAINT "CriteriaCategory_positionId_fkey" FOREIGN KEY ("positionId") REFERENCES "Position"("positionId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "CriteriaCategory" ADD CONSTRAINT "CriteriaCategory_cityCityId_fkey" FOREIGN KEY ("cityCityId") REFERENCES "City"("cityId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Criteria" ADD CONSTRAINT "Criteria_criCategoryId_fkey" FOREIGN KEY ("criCategoryId") REFERENCES "CriteriaCategory"("criCategoryId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "EmployeeEvaluation" ADD CONSTRAINT "EmployeeEvaluation_evaluatorId_fkey" FOREIGN KEY ("evaluatorId") REFERENCES "EmployeeRegistration"("empId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "EmployeeEvaluation" ADD CONSTRAINT "EmployeeEvaluation_evaluateeId_fkey" FOREIGN KEY ("evaluateeId") REFERENCES "EmployeeRegistration"("empId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "CriteriaResponse" ADD CONSTRAINT "CriteriaResponse_criCategoryId_fkey" FOREIGN KEY ("criCategoryId") REFERENCES "CriteriaCategory"("criCategoryId") ON DELETE RESTRICT ON UPDATE CASCADE;

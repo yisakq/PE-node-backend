@@ -41,7 +41,7 @@ const createUserAccount = async (req, res) => {
         const resetLink = `http://localhost:5000/api/auth/reset-password?token=${tempToken}`;
 
         const mail = {
-            from: '"Moti Engineering Plc" <yisak.mellion@motiengineering.com>',
+            from: '"Moti Engineering Plc" <yisak.mellion@motiengineering.comtele>',
             to: employee.empEmail,
             subject: 'Set up your password',
             html: `

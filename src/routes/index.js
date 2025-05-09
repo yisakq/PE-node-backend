@@ -9,6 +9,7 @@ const criteriaRoutes = require('./criteriaRoutes');
 const ratingLevelRoutes = require('./ratingLevelRoutes');
 const questionaryRoutes = require('./questionaryRoutes');
 const cityRoutes = require('./cityRoutes');
+const evaluationRoutes = require('./employeeEvaluation');
 const rootRouter = express.Router();
 
 rootRouter.use('/auth', authRoutes)
@@ -21,6 +22,6 @@ rootRouter.use('/criteria', criteriaRoutes)
 rootRouter.use('/rating-level', ratingLevelRoutes)
 rootRouter.use('/questionary', questionaryRoutes)
 rootRouter.use('/city', cityRoutes)
-
+rootRouter.use('/evaluation', evaluationRoutes)
 
 module.exports = rootRouter;
